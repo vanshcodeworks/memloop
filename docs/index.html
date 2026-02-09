@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MemLoop | Local Vector Memory Engine</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Retro Effect Overlay -->
+    <div class="scanlines"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar glass">
+        <div class="logo">MEMLOOP<span class="blinking-cursor">_</span></div>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#docs">Docs</a>
+            <a href="https://github.com/vanshcodeworks/memloop" target="_blank" class="github-link">GitHub</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container hero-grid">
+            <div class="hero-text fade-in">
+                <h1>Infinite Memory for AI. <br><span class="highlight-cyan">Locally.</span></h1>
+                <p class="hero-sub">
+                    A local-first vector memory engine for Python. 
+                    No API keys. No cloud bills. Just high-performance, 
+                    offline RAG for your LLM agents.
+                </p>
+                <div class="cta-group">
+                    <button class="btn-primary" onclick="copyInstall()">
+                        pip install memloop <span class="copy-icon">📋</span>
+                    </button>
+                    <a href="#docs" class="btn-secondary">Read The Docs</a>
+                </div>
+            </div>
+
+            <!-- Live Terminal -->
+            <div class="terminal-wrapper fade-in delay-1">
+                <div class="terminal-header">
+                    <div class="dot red"></div>
+                    <div class="dot yellow"></div>
+                    <div class="dot green"></div>
+                    <span class="term-title">bash — 80x24</span>
+                </div>
+                <div class="terminal-body">
+                    <div id="typewriter-output"></div>
+                    <span class="cursor-block">█</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Architecture Visualization -->
+    <section class="architecture-section">
+        <div class="container">
+            <h2 class="section-title">Data Flow Architecture</h2>
+            <div class="arch-diagram">
+                <!-- Nodes -->
+                <div class="node user">User Query</div>
+                <div class="node cache">L1 Cache<br><span class="small">(O(1) Hash)</span></div>
+                <div class="node vectordb">Vector DB<br><span class="small">(Chroma)</span></div>
+                <div class="node llm">LLM Agent</div>
+
+                <!-- Connecting Lines & Data Packets -->
+                <!-- Fast Path: User -> Cache -> User -->
+                <div class="connection user-cache">
+                    <div class="packet fast-packet"></div>
+                </div>
+                
+                <!-- Slow Path: User -> VectorDB -> LLM -->
+                <div class="connection cache-vector">
+                    <div class="packet slow-packet"></div>
+                </div>
+                <div class="connection vector-llm">
+                    <div class="packet slow-packet delay-packet"></div>
+                </div>
+            </div>
+            <div class="legend">
+                <span class="legend-item"><span class="dot-legend green"></span> Hot Path (Cache Hit)</span>
+                <span class="legend-item"><span class="dot-legend blue"></span> Cold Path (Vector Search)</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bento Grid Features -->
+    <section id="features" class="features-section">
+        <div class="container">
+            <h2 class="section-title">System Capabilities</h2>
+            <div class="bento-grid">
+                
+                <!-- Card 1: Semantic Cache (Wide) -->
+                <div class="bento-card wide glow-border fade-up">
+                    <div class="card-icon">⚡</div>
+                    <h3>O(1) Semantic Cache</h3>
+                    <p>Why search vectors twice? MemLoop hashes queries to intercept repeated questions instantly. Improves latency by 99% for recurring topics.</p>
+                </div>
+
+                <!-- Card 2: Offline Privacy (Tall) -->
+                <div class="bento-card tall glow-border fade-up delay-1">
+                    <div class="card-icon">🔒</div>
+                    <h3>100% Offline</h3>
+                    <p>Your data never leaves localhost. We use ChromaDB and lightweight SentenceTransformers that run on your CPU. Perfect for sensitive contracts, medical data, or PII.</p>
+                </div>
+
+                <!-- Card 3: Universal Loader -->
+                <div class="bento-card fade-up delay-2">
+                    <div class="card-icon">📂</div>
+                    <h3>Universal Ingestion</h3>
+                    <p>Point to a folder of <code>.pdf</code>, <code>.csv</code>, or <code>.txt</code> files. MemLoop handles the ETL pipeline automatically.</p>
+                </div>
+
+                <!-- Card 4: Citations -->
+                <div class="bento-card fade-up delay-3">
+                    <div class="card-icon">🔖</div>
+                    <h3>Page-Level Citations</h3>
+                    <p>Hallucination killer. Every retrieval comes with source metadata: <code>{source: "manual.pdf", page: 42}</code>.</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Documentation -->
+    <section id="docs" class="docs-section">
+        <div class="container">
+            <h2 class="section-title">Developer documentation</h2>
+            
+            <div class="tabs-container glass">
+                <div class="tabs-header">
+                    <button class="tab-btn active" data-tab="quickstart">Quick Start</button>
+                    <button class="tab-btn" data-tab="api">Python API</button>
+                    <button class="tab-btn" data-tab="cli">CLI Mode</button>
+                </div>
+                
+                <div class="tabs-content">
+                    
+                    <!-- Tab 1 -->
+                    <div id="quickstart" class="tab-pane active">
+                        <p class="tab-desc">Install and run your first agent in under 30 seconds.</p>
+                        <div class="code-block">
+<span class="comment"># 1. Install via pip</span>
+pip install memloop google-generativeai
+
+<span class="comment"># 2. Build a RAG Agent (20 Lines)</span>
+<span class="keyword">import</span> google.generativeai <span class="keyword">as</span> genai
+<span class="keyword">from</span> memloop <span class="keyword">import</span> MemLoop
+
+<span class="comment"># Setup</span>
+genai.configure(api_key=<span class="string">"YOUR_KEY"</span>)
+model = genai.GenerativeModel(<span class="string">'gemini-pro'</span>)
+brain = <span class="class">MemLoop</span>()
+
+<span class="comment"># Ingest (Run once, remember forever)</span>
+brain.learn_url(<span class="string">"https://docs.python.org/3/"</span>)
+
+<span class="comment"># Retrieve & Generate</span>
+query = <span class="string">"How do decorators work?"</span>
+context = brain.recall(query)
+
+prompt = <span class="string">f"Context:\n{context}\n\nUser: {query}"</span>
+response = model.generate_content(prompt)
+<span class="string">print</span>(response.text)
+                        </div>
+                    </div>
+
+                    <!-- Tab 2 -->
+                    <div id="api" class="tab-pane">
+                        <p class="tab-desc">Comprehensive Reference for Power Users.</p>
+                        
+                        <h4 class="api-header">class MemLoop(db_path="./memloop_data")</h4>
+                        <p class="api-text">Initializes the local vector engine. Data is persisted to disk.</p>
+                        
+                        <h4 class="api-header">.learn_url(url: str) -> int</h4>
+                        <p class="api-text">Scrapes, cleans, and chunks a webpage. Returns chunk count.</p>
+                        
+                        <h4 class="api-header">.learn_local(folder_path: str) -> int</h4>
+                        <p class="api-text">Recursively ingests a folder. Supports <code>.pdf</code>, <code>.csv</code>, <code>.txt</code>, <code>.md</code>.</p>
+                        
+                        <h4 class="api-header">.recall(query: str) -> str</h4>
+                        <p class="api-text">
+                            1. Checks Semantic Cache (O(1)).<br>
+                            2. Performs Vector Search.<br>
+                            3. Returns formatted text with citations.
+                        </p>
+                    </div>
+
+                    <!-- Tab 3 -->
+                    <div id="cli" class="tab-pane">
+                        <p class="tab-desc">Use the terminal for quick testing and data management.</p>
+                        <div class="term-block">
+$ memloop
+[SYSTEM]: Initializing Neural Link...
+
+> /learn https://en.wikipedia.org/wiki/Artificial_intelligence
+[SYSTEM]: Absorbed 45 chunks.
+
+> What is the history of AI?
+[MEMLOOP]: "AI history began in antiquity..." (Source: Wikipedia)
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container footer-content">
+            <div class="footer-left">
+                <h4>MEMLOOP_</h4>
+                <p>Open Source AI Memory Engine.</p>
+            </div>
+            <div class="footer-right">
+                <a href="#">License MIT</a>
+                <a href="https://github.com/vanshcodeworks">VanshCodeWorks</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

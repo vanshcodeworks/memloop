@@ -2,6 +2,8 @@
 
 > **"Give your AI infinite memory without the API bills."**
 
+🌐 **Website & Docs:** [memloop.vanshcodeworks.com](https://memloop.vanshcodeworks.com)
+
 **MemLoop** is a production-ready, local-first memory orchestration engine designed to give LLMs (like Gemini, GPT-4, Llama 3) long-term retention capabilities. It bridges the gap between transient context windows and persistent vector storage.
 
 Unlike wrapper libraries, MemLoop implements a custom **Dual-Memory Architecture** (Short-term buffer + Long-term Vector Store) and runs entirely offline.
@@ -168,4 +170,4 @@ Contributions are welcome! Please open an issue or submit a PR.
 
 ---
 
-**Built with ❤️ by [Vansh]**(https://github.com/vanshcodeworks)
+**Built with ❤️ by** [Vanshcodeworks](https://github.com/vanshcodeworks)

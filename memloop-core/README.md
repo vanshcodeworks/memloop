@@ -1,171 +1,128 @@
-# MemLoop: Local Vector Memory for AI Agents
+# MemLoop 
 
-> **"Give your AI infinite memory without the API bills."**
+**The Plug-and-Play Memory Engine for AI Agents.**
 
-**MemLoop** is a production-ready, local-first memory orchestration engine designed to give LLMs (like Gemini, GPT-4, Llama 3) long-term retention capabilities. It bridges the gap between transient context windows and persistent vector storage.
+[![PyPI version](https://badge.fury.io/py/memloop.svg)](https://badge.fury.io/py/memloop)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Unlike wrapper libraries, MemLoop implements a custom **Dual-Memory Architecture** (Short-term buffer + Long-term Vector Store) and runs entirely offline.
+**MemLoop** is a local-first Python library that gives LLMs "Infinite Memory". It ingests documents (PDF, CSV, TXT) and websites, stores them in a local vector database, and retrieves them with citation-style mapping.
 
----
-
-## Why MemLoop?
-
-* **Privacy-First & Offline:** Runs 100% locally using `ChromaDB` and `SentenceTransformers`. No OpenAI API keys required. Your data never leaves your machine.
-* **Zero-Latency Caching:** Implements an **O(1) Semantic Cache** that intercepts repeated queries before they hit the Vector DB, reducing retrieval latency by ~99%.
-* **Citation-Aware Retrieval:** Don't just get text; get the source. MemLoop tracks **Page Numbers, Row Indices, and URLs** so your AI can cite its sources (e.g., *"Source: manual.pdf, Page 12"*).
-* **Universal Ingestion:** Built-in ETL pipeline that automatically ingests:
-* **Websites** (Recursive crawling with `BeautifulSoup`)
-* **PDFs & Docs** (Automatic text chunking)
-* **Tabular Data** (CSV/Excel linearizer for vector compatibility)
-
-
-
----
-
-## Architecture
-
-MemLoop decouples ingestion from retrieval, using a hybrid cache-first strategy to ensure speed and accuracy.
-
-```mermaid
-graph TD
-    subgraph MemLoop_Engine [MemLoop Core]
-        Query[User Query] --> Cache{Check Cache?}
-        Cache -- Hit (0.01ms) --> Response
-        Cache -- Miss --> VectorDB[(ChromaDB <br/> Local Store)]
-        VectorDB --> Rerank[Context Reranker]
-        Rerank --> Response
-    end
-
-    subgraph Ingestion_Layer [ETL Pipeline]
-        Web[Web Scraper] --> Chunker
-        Files[PDF/CSV Loader] --> Chunker
-        Chunker --> Embed[Local Embeddings]
-        Embed --> VectorDB
-    end
-
-```
+No API keys required. 100% Offline Capable.
 
 ---
 
 ##  Quick Start
 
-### 1. Installation
+### Installation
 
 ```bash
 pip install memloop
-
 ```
 
-### 2. The Interactive CLI (Chat with your Data)
-
-Launch the built-in terminal interface to test your memory engine instantly.
+### The 30-Second Demo (Interactive CLI)
 
 ```bash
-$ memloop
-
-[SYSTEM]: Initializing Neural Link...
-[USER]: /learn https://en.wikipedia.org/wiki/Artificial_intelligence
-[SYSTEM]: Success. Absorbed 45 chunks.
-[USER]: What is AI?
-[MEMLOOP]: "AI is intelligence demonstrated by machines..." (Source: Wikipedia, Chunk 12)
-
-```
-
-### 3. Python SDK (Build your own Agent)
-
-Integrate MemLoop into your Python projects in 3 lines of code.
-
-```python
-from memloop import MemLoop
-
-# Initialize Brain (Persists to ./memloop_data)
-brain = MemLoop()
-
-# A. Ingest Knowledge
-print("Ingesting documentation...")
-brain.learn_url("https://docs.python.org/3/")
-brain.learn_local("./my_documents_folder")
-
-# B. Add Conversation Context
-brain.add_memory("User is building a React app.")
-
-# C. Retrieve Context (with Caching & Citations)
-context = brain.recall("How do python decorators work?")
-
-print(context) 
-# Output: 
-# "Short Term: User is building a React app..."
-# "Long Term: [1] Decorators are functions... (Ref: python.org, Section 4.2)"
-
+memloop
 ```
 
 ---
 
-## Integration Example: MemLoop + Gemini
+##  Build Your First RAG Agent (The 20-Line Tutorial)
 
-Here is how to use MemLoop as the "Long-Term Memory" for a Gemini (or OpenAI) agent.
+Retrieval-Augmented Generation (RAG) usually requires setting up Vector DBs, Embedding Models, and Retrievers. **MemLoop** handles that complexity so you can focus on the logic.
+
+### With Gemini
 
 ```python
 import google.generativeai as genai
 from memloop import MemLoop
 
-# 1. Setup Memory
+# --- Configuration ---
+genai.configure(api_key="YOUR_GEMINI_API_KEY")
+model = genai.GenerativeModel('gemini-pro')
 brain = MemLoop()
 
-# 2. Setup LLM
-genai.configure(api_key="YOUR_API_KEY")
-model = genai.GenerativeModel('gemini-2.5-flash')
+# --- Step 1: Ingest (Run once, persist forever) ---
+# brain.learn_url("https://docs.python.org/3/glossary.html") 
 
-def ask_agent(query):
-    # Retrieve relevant memories locally (Free & Fast)
-    context = brain.recall(query)
-    
-    # Send only relevant context to LLM
-    prompt = f"""
-    Use the following context to answer the user.
-    Context: {context}
-    
-    User: {query}
-    Answer:
-    """
-    response = model.generate_content(prompt)
-    return response.text
+# --- Step 2: Retrieve ---
+query = "What is a decorator in Python?"
+context = brain.recall(query) # <--- MemLoop does the heavy lifting
 
+# --- Step 3: Generate ---
+prompt = f"Use this context to answer:\n{context}\n\nUser: {query}"
+response = model.generate_content(prompt)
+
+print(response.text)
+```
+
+### With OpenAI
+
+```python
+from openai import OpenAI
+from memloop import MemLoop
+
+client = OpenAI(api_key="YOUR_KEY")
+brain = MemLoop()
+
+# brain.learn_local("./my_docs")
+
+query = "Summarize the documents."
+context = brain.recall(query)
+
+response = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[{"role": "user", "content": f"Context:\n{context}\n\nQ: {query}"}]
+)
+print(response.choices[0].message.content)
 ```
 
 ---
 
-## Supported Formats
+##  API Reference
 
-| Format | Features |
-| --- | --- |
-| **.txt / .md** | Standard text chunking with overlap. |
-| **.csv** | **Row Linearization**: Converts rows into narrative sentences for better vector matching. |
-| **.pdf** | **Page Tracking**: extracts text while preserving page numbers for citations. |
-| **URLs** | **Smart Scraper**: Auto-removes HTML boilerplate (scripts, navbars, ads). |
+### `MemLoop()`
+The main entry point. Initializes the local vector store (ChromaDB) in `./memloop_data`.
+```python
+brain = MemLoop(db_path="./custom_folder")
+```
 
----
+### `.learn_url(url: str)`
+Scrapes a webpage, cleans the HTML, chunks the text, and stores vectors locally.
+* **Returns:** `int` (Number of chunks ingested).
 
-## 🗺️ Roadmap
+### `.learn_local(folder_path: str)`
+Recursively ingests a local folder. Supports `.pdf` (with page tracking), `.csv` (row linearization), `.txt`, and `.md`.
+* **Returns:** `int` (Number of documents processed).
 
-* [x] Local Vector Storage (ChromaDB)
-* [x] Semantic Caching (LRU Strategy)
-* [x] Web & Local File Ingestion
-* [ ] Multi-Modal Support (Image Embeddings)
-* [ ] GraphRAG Integration (Knowledge Graphs)
-
----
-
-## Contributing
-
-Contributions are welcome! Please open an issue or submit a PR.
-
-1. Fork the repo
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+### `.recall(query: str)`
+Retrieves the most relevant context.
+1. Checks **Semantic Cache** (O(1) return if query is repeated).
+2. If miss, performs **Vector Search** (Cosine Similarity).
+3. Returns formatted string with Citations.
 
 ---
 
-**Built with ❤️ by [Vansh**](https://github.com/vanshcodeworks)
+##  Pro Tip: The "Persistent Brain"
+
+Because MemLoop uses **ChromaDB** locally, you don't need to run `.learn_url` every time!
+
+Run the script once to learn:
+
+```python
+brain.learn_url("https://docs.python.org") # Run this ONCE
+```
+
+Then comment it out. Your agent now "remembers" that data forever in future runs.
+
+---
+
+##  Technology Stack
+
+*   **Vector Querying**: ChromaDB
+*   **Embeddings**: all-MiniLM-L6-v2 (HuggingFace)
+*   **Parsing**: BeautifulSoup4 (Web), PyPDF (Docs)
+
+---
+
+*Built with ❤️ by Vansh.*

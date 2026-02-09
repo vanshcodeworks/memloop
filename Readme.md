@@ -168,4 +168,4 @@ Contributions are welcome! Please open an issue or submit a PR.
 
 ---
 
-**Built with ❤️ by [Vansh**](https://github.com/vanshcodeworks)
+**Built with ❤️ by [Vansh]**(https://github.com/vanshcodeworks)

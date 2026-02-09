@@ -1,0 +1,5 @@
+chromadb
+sentence-transformers
+beautifulsoup4
+requests
+pypdf

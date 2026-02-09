@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+dist/
+build/
+*.egg-info/
+memloop_data/
+.pytest_cache/
+.env
+venv/
+.venv/
+.DS_Store
+chroma.sqlite3
